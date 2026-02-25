@@ -376,3 +376,99 @@ This avoids false positives while maintaining automatic recovery capability.
 
 This creates a self-healing system suitable for unattended use.
 
+
+---
+
+# 🚀 Faster Boot Optimization
+
+## 1️⃣ Ensure Multi-User Target (No GUI)
+
+Set default boot target:
+
+    sudo systemctl set-default multi-user.target
+
+---
+
+## 2️⃣ Reduce Network Wait Time
+
+If boot is delayed by network wait services:
+
+    sudo systemctl disable systemd-networkd-wait-online.service
+
+For NetworkManager systems:
+
+    sudo systemctl disable NetworkManager-wait-online.service
+
+---
+
+## 3️⃣ Analyze Boot Performance
+
+Measure boot time:
+
+    systemd-analyze
+    systemd-analyze blame
+
+This helps identify slow services.
+
+---
+
+# ⚙️ CPU Governor Optimization
+
+For consistent performance and lower audio jitter, set CPU governor to performance mode.
+
+## Install cpufreq utilities
+
+    sudo apt install cpufrequtils
+
+## Set performance governor immediately
+
+    sudo cpufreq-set -g performance
+
+## Make it persistent
+
+Edit:
+
+    sudo nano /etc/default/cpufrequtils
+
+Insert:
+
+    GOVERNOR="performance"
+
+Disable ondemand service:
+
+    sudo systemctl disable ondemand
+
+Reboot to apply permanently.
+
+---
+
+# 🎯 Recommended Configuration for Low-Power Hardware
+
+For small CPUs:
+
+- Use performance governor
+- Disable unnecessary services
+- Keep watchdog active
+- Avoid aggressive memory or CPU watchdog thresholds
+
+This ensures:
+
+- Faster boot
+- Stable playback
+- Reduced frequency scaling latency
+- Predictable system behavior
+
+---
+
+# 🏁 Expected Result
+
+With these optimizations:
+
+- Faster boot time
+- Lower service overhead
+- More consistent CPU frequency
+- Improved long-term stability
+
+Your system becomes closer to a dedicated commercial media streamer appliance.
+
+---
