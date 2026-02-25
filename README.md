@@ -268,3 +268,118 @@ Ubuntu Server
 ---
 
 Enjoy your Linux-based Spotify Lossless streamer 🎶
+
+---
+
+
+
+# Create BONUS_WATCHDOG.md file
+
+content = """
+# 🛡 Bonus Point – OS-Level Watchdog (Optional)
+
+For increased reliability, you can enable a kernel-level watchdog to automatically reboot the system in case of freeze, prolonged network failure, or critical memory conditions.
+
+This is especially useful for unattended installations.
+
+⚠️ Recommended for production setups.
+
+---
+
+## Why OS-Level Watchdog?
+
+This adds protection against:
+
+- Kernel freeze
+- System hang
+- Network loss for extended periods
+- Severe memory exhaustion
+
+It does NOT rely on CPU load (important for low-power systems).
+
+---
+
+## 1️⃣ Enable systemd Runtime Watchdog (Recommended)
+
+Edit:
+
+    sudo nano /etc/systemd/system.conf
+
+Add or uncomment:
+
+    RuntimeWatchdogSec=30
+
+Apply changes:
+
+    sudo systemctl daemon-reexec
+
+This activates the kernel watchdog via systemd.
+If the system becomes unresponsive for 30 seconds, it will reboot automatically.
+
+This method is lightweight and safe for low-CPU hardware.
+
+---
+
+## 2️⃣ (Optional) Install Linux Watchdog Service
+
+Install:
+
+    sudo apt install watchdog
+
+Load software watchdog module:
+
+    sudo modprobe softdog
+    echo softdog | sudo tee -a /etc/modules
+
+Edit configuration:
+
+    sudo nano /etc/watchdog.conf
+
+Minimal safe configuration:
+
+    watchdog-device = /dev/watchdog
+    watchdog-timeout = 20
+    interval = 10
+
+    # Network check
+    ping = 8.8.8.8
+    interface = wlan0
+
+    # Root filesystem activity
+    file = /var/log/syslog
+
+    # Memory safeguard (very low threshold)
+    min-memory = 20
+
+    # Do NOT enable max-load on low-power CPUs
+
+Enable service:
+
+    sudo systemctl enable watchdog
+    sudo systemctl start watchdog
+
+---
+
+## Recommended Setup for Low-Power Hardware
+
+For small CPUs (Atom, Celeron, etc.):
+
+- Enable RuntimeWatchdogSec
+- Enable network ping check
+- Enable minimal memory threshold
+- Do NOT enable max-load
+- Do NOT use aggressive thresholds
+
+This avoids false positives while maintaining automatic recovery capability.
+
+---
+
+## Recovery Strategy Overview
+
+1. Spotify crash → systemd restarts service  
+2. Service fails repeatedly → watchdog still active  
+3. System freeze → kernel watchdog triggers reboot  
+4. Long network outage → watchdog triggers reboot  
+
+This creates a self-healing system suitable for unattended use.
+
