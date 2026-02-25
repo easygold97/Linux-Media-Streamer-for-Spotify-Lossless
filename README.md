@@ -271,18 +271,11 @@ Enjoy your Linux-based Spotify Lossless streamer 🎶
 
 ---
 
-
-
-# Create BONUS_WATCHDOG.md file
-
-content = """
 # 🛡 Bonus Point – OS-Level Watchdog (Optional)
 
 For increased reliability, you can enable a kernel-level watchdog to automatically reboot the system in case of freeze, prolonged network failure, or critical memory conditions.
 
 This is especially useful for unattended installations.
-
-⚠️ Recommended for production setups.
 
 ---
 
