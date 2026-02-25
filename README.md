@@ -267,10 +267,4 @@ Ubuntu Server
 
 ---
 
-## 📄 License
-
-MIT License recommended.
-
----
-
 Enjoy your Linux-based Spotify Lossless streamer 🎶
