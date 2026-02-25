@@ -1,111 +1,107 @@
-# Linux-Media-Streamer-for-Spotify-Lossless
-Headless Spotify streamer built on Ubuntu Server 24.04 LTS.  Runs the official Spotify client in a minimal, stable, headless environment with support for Spotify Lossless and any ALSA-compatible audio device.
 
-🚀 Features
+# 🎧 Linux Media Streamer for Spotify Lossless
 
-✅ Ubuntu Server 24.04 LTS
+A minimal, stable and headless Spotify streamer built on **Ubuntu Server 24.04 LTS**.
 
-✅ Headless (no desktop environment)
+Runs the official Spotify Linux client in a lightweight environment with support for **Spotify Lossless**, automatic startup, and compatibility with any ALSA-supported audio device.
 
-✅ No display manager
+---
 
-✅ Automatic start at boot
+## 🚀 Features
 
-✅ Spotify Connect compatible
+- ✅ Ubuntu Server 24.04 LTS
+- ✅ Fully headless (no desktop environment)
+- ✅ No display manager
+- ✅ Automatic start at boot
+- ✅ Spotify Connect compatible
+- ✅ Spotify Lossless support (if enabled on account)
+- ✅ Works with any ALSA-compatible DAC
+- ✅ Automatic restart on crash
+- ✅ Minimal system footprint
+- ✅ Optimized audio path (no unnecessary resampling)
 
-✅ Spotify Lossless support (when available on account)
+---
 
-✅ Works with any ALSA-compatible DAC
+## 📦 Requirements
 
-✅ Automatic restart on crash
+- Ubuntu Server 24.04 LTS (clean installation)
+- x86_64 mini PC
+- Spotify Premium account (Lossless enabled if available)
+- USB DAC / PCIe sound card / HDMI audio (ALSA compatible)
+- Internet connection (Wi-Fi or Ethernet)
+- OpenSSH enabled during Ubuntu installation
 
-✅ Minimal system footprint
+During installation:
+- Enable **OpenSSH**
+- Do NOT install a desktop environment
 
-✅ Audio path optimized (no unnecessary resampling)
+---
 
-📦 Requirements
+# 1️⃣ System Update
 
-Ubuntu Server 24.04 LTS (clean install)
-
-x86_64 mini PC
-
-Spotify Premium account (Lossless enabled if available)
-
-USB DAC / PCIe sound card / HDMI audio (ALSA compatible)
-
-Internet connection (Wi-Fi or Ethernet)
-
-OpenSSH enabled during installation
-
-During Ubuntu installation:
-
-Enable OpenSSH
-
-Do NOT install a desktop environment
-
-1️⃣ System Update
+```bash
 sudo apt update
 sudo apt upgrade -y
-2️⃣ Install Spotify Official Client
+```
 
-Add official repository:
+---
 
-curl -sS https://download.spotify.com/debian/pubkey_5384CE82BA52C83A.asc | \
-sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
+# 2️⃣ Install Official Spotify Client
 
-echo "deb https://repository.spotify.com stable non-free" | \
-sudo tee /etc/apt/sources.list.d/spotify.list
+```bash
+curl -sS https://download.spotify.com/debian/pubkey_5384CE82BA52C83A.asc | sudo gpg --dearmor --yes -o /etc/apt/trusted.gpg.d/spotify.gpg
 
-Install:
+echo "deb https://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
 
 sudo apt update
 sudo apt install spotify-client
-3️⃣ Install Minimal Graphical Dependencies
+```
 
-We only need a virtual X server:
+---
 
+# 3️⃣ Install Minimal Graphical Dependencies
+
+```bash
 sudo apt install xorg xvfb dbus-x11 pulseaudio
+```
 
-No desktop environment is required.
+---
 
-4️⃣ First Login (One-Time Setup)
+# 4️⃣ First Login (One-Time Setup)
 
-Temporarily connect a monitor and keyboard.
-
-Create:
-
+```bash
 nano ~/.xinitrc
+```
 
 Insert:
 
+```
 exec dbus-run-session spotify --disable-gpu --no-sandbox
+```
 
 Start:
 
+```bash
 startx
+```
 
-Log into Spotify.
+Log into Spotify and enable Lossless if available:
 
-Inside Spotify settings:
+Settings → Audio Quality → Enable Lossless
 
-Settings → Audio Quality → Enable Lossless (if available)
+Close X when finished.
 
-Close X.
+---
 
-Credentials are stored in:
+# 5️⃣ Headless Launch Script
 
-~/.config/spotify
-
-The system can now operate fully headless.
-
-5️⃣ Headless Launch Script
-
-Create:
-
+```bash
 sudo nano /usr/local/bin/spotify-headless.sh
+```
 
 Insert:
 
+```bash
 #!/bin/bash
 
 export DISPLAY=:99
@@ -119,19 +115,26 @@ sleep 2
 exec dbus-run-session spotify --disable-gpu --no-sandbox
 
 kill $XVFB_PID
+```
 
 Make executable:
 
+```bash
 sudo chmod +x /usr/local/bin/spotify-headless.sh
-6️⃣ Create systemd USER Service (Important)
+```
 
-⚠️ Do NOT use a system-wide service.
+---
 
+# 6️⃣ Create systemd USER Service
+
+```bash
 mkdir -p ~/.config/systemd/user
 nano ~/.config/systemd/user/spotify-headless.service
+```
 
 Insert:
 
+```ini
 [Unit]
 Description=Spotify Headless Streamer
 After=network.target sound.target
@@ -143,122 +146,131 @@ RestartSec=5
 
 [Install]
 WantedBy=default.target
+```
 
-Enable user lingering:
+Enable lingering:
 
+```bash
 sudo loginctl enable-linger $USER
+```
 
 Enable service:
 
+```bash
 systemctl --user daemon-reload
 systemctl --user enable spotify-headless
 systemctl --user start spotify-headless
-7️⃣ Audio Configuration (Generic for Any DAC)
-Detect audio devices
+```
+
+---
+
+# 7️⃣ Audio Configuration
+
+List audio devices:
+
+```bash
 aplay -l
-List Pulse sinks
+```
+
+List Pulse sinks:
+
+```bash
 pactl list short sinks
+```
 
-Example:
+Set preferred device:
 
-alsa_output.usb-My_DAC-00.analog-stereo
-alsa_output.pci-0000_00_1b.0.hdmi-stereo
-Set preferred device
+```bash
 pactl set-default-sink SINK_NAME
+```
 
 Make permanent:
 
+```bash
 mkdir -p ~/.config/pulse
 nano ~/.config/pulse/default.pa
+```
 
 Insert:
 
+```
 set-default-sink SINK_NAME
-🔊 Audio Optimization
+```
+
+---
+
+# 🔊 Audio Optimization
 
 Edit:
 
+```bash
 sudo nano /etc/pulse/daemon.conf
+```
 
-For standard 44.1kHz DAC:
+Recommended:
 
+```
 default-sample-rate = 44100
 alternate-sample-rate = 48000
 avoid-resampling = yes
 resample-method = trivial
+```
 
-For hi-res DAC:
+Restart:
 
-default-sample-rate = 48000
-alternate-sample-rate = 44100
-avoid-resampling = yes
-
-Restart service:
-
+```bash
 systemctl --user restart spotify-headless
-🔍 Verify Real Audio Path
+```
+
+---
+
+# 🔍 Verify Audio Path
 
 During playback:
 
+```bash
 cat /proc/asound/cardX/stream0
+```
 
-Expected example:
+Expected:
 
+```
 Format: S16_LE
 Momentary freq = 44100 Hz
-🔊 Volume Recommendation
+```
 
-Set digital volume to 100%:
+---
 
-pactl set-sink-volume SINK_NAME 100%
+# 🧹 Optional Cleanup
 
-Control volume from amplifier for maximum quality.
-
-🧹 Optional System Cleanup
-
-Disable unnecessary services:
-
+```bash
 sudo systemctl disable --now cups
 sudo systemctl disable --now cups-browsed
 sudo systemctl disable --now ModemManager
 sudo systemctl disable --now multipathd
 sudo systemctl disable --now packagekit
-🏗 Architecture Overview
+```
 
-Ubuntu Server
-→ systemd user service
-→ Xvfb
-→ dbus-run-session
-→ Spotify official client (Lossless)
-→ PulseAudio (user session)
-→ ALSA
-→ DAC
-→ Amplifier
+---
 
-⚠️ Troubleshooting
-Only "auto_null" sink appears
+# 🏗 Architecture
 
-Use systemd user service, not system-wide service.
+Ubuntu Server  
+→ systemd user service  
+→ Xvfb  
+→ dbus-run-session  
+→ Spotify official client (Lossless)  
+→ PulseAudio  
+→ ALSA  
+→ DAC  
+→ Amplifier  
 
-No audio output
+---
 
-Check:
+## 📄 License
 
-pactl list short sinks
-Verify Spotify running
-systemctl --user status spotify-headless
-Restart service
-systemctl --user restart spotify-headless
-🎯 Project Goals
+MIT License recommended.
 
-Stable
+---
 
-Minimal
-
-Headless
-
-Lossless capable
-
-Hardware agnostic
-
-Easy to replicate
+Enjoy your Linux-based Spotify Lossless streamer 🎶
